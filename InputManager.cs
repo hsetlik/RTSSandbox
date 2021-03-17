@@ -6,15 +6,15 @@ public class InputManager : MonoBehaviour
 {
     public float panSpeed = 2.0f;
     public float upDownSpeed = 12.0f;
-    private float panDetect = 35.0f;
+    public float panDetect = 35.0f;
+    public float maxHeight = 800.0f;
+    public float tiltFactor = 0.98f;
+    public float minHeight = 10.0f;
+    public float ExpThreshold = 45.0f; //threshold below which the angle is sharpened exponentially
     private bool lastFrameMoved = false;
     private int consecFrames = 0;
     private float fExp = 1.01f;
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    private float maxAngle = 85.0f;
     // Update is called once per frame
     void Update()
     {
@@ -67,9 +67,19 @@ public class InputManager : MonoBehaviour
         }
         else
             consecFrames = 0;
-           
-
+        if (moveY > maxHeight)
+            moveY = maxHeight;
+        if (moveY < minHeight)
+            moveY = minHeight;
+        float sFactor = maxHeight - (maxHeight - moveY);
+        float angle = (((sFactor / maxHeight)) * maxAngle) % 360.0f;
+        if (angle < ExpThreshold)
+            angle *= Mathf.Pow(tiltFactor, (ExpThreshold - angle) / (ExpThreshold / 10.0f));
+        if (angle > maxAngle)
+            angle = maxAngle;
+        Quaternion newAngle = Quaternion.Euler(angle, Camera.main.transform.rotation.y, Camera.main.transform.rotation.z);
         Vector3 newPos = new Vector3(moveX, moveY, moveZ);
         Camera.main.transform.position = newPos;
+        Camera.main.transform.rotation = newAngle;
     }
 }
