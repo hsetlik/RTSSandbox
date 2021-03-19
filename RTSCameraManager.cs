@@ -2,18 +2,19 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class InputManager : MonoBehaviour
+public class RTSCameraManager : MonoBehaviour
 {
-    public float panSpeed = 2.0f;
+    public float initialPanSpeed = 2.0f;
+    public float maxPanSpeed = 10.0f;
     public float upDownSpeed = 12.0f;
     public float panDetect = 35.0f;
     public float maxHeight = 800.0f;
     public float tiltFactor = 0.98f;
     public float minHeight = 10.0f;
-    public float ExpThreshold = 45.0f; //threshold below which the angle is sharpened exponentially
+    public float ExpThreshold = 45.0f; //threshold below which the angle is sharpened expon
     private bool lastFrameMoved = false;
     private int consecFrames = 0;
-    private float fExp = 1.01f;
+    private float fExp = 1.018f;
     private float maxAngle = 85.0f;
     // Update is called once per frame
     void Update()
@@ -31,27 +32,31 @@ public class InputManager : MonoBehaviour
         float mouseX = Input.mousePosition.x;
         float mouseY = Input.mousePosition.y;
         float dScroll = Input.mouseScrollDelta.y;
-        float fSpeed = panSpeed / 10.0f;
+        float fSpeed = initialPanSpeed / 10.0f;
+        
         float speedCoeff = Mathf.Pow(fExp, (float)consecFrames);
-        if(mouseX > 0 && mouseX < panDetect)
+        float cSpeed = fSpeed * speedCoeff;
+        if (cSpeed > maxPanSpeed)
+            cSpeed = maxPanSpeed;
+        if (mouseX > 0 && mouseX < panDetect)
         {
-            moveX -= fSpeed * speedCoeff;
+            moveX -= cSpeed;
             lastFrameMoved = true;
         }
         if(mouseX < Screen.width && mouseX > Screen.width - panDetect)
         {
-            moveX += fSpeed * speedCoeff;
+            moveX += cSpeed;
             lastFrameMoved = true;
         }
         if(mouseY > 0 && mouseY < panDetect)
         {
-            moveZ -= fSpeed * speedCoeff;
+            moveZ -= cSpeed;
             lastFrameMoved = true;
             
         }
         if(mouseY < Screen.height && mouseY > (Screen.height - panDetect))
         {
-            moveZ += fSpeed * speedCoeff;
+            moveZ += cSpeed;
             lastFrameMoved = true;
         }
         if (Mathf.Abs(dScroll) > 0.1f)
